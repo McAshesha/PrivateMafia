@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>ru.mafia</groupId>
+    <artifactId>PrivateMafia</artifactId>
+    <version>1.0</version>
+    <packaging>jar</packaging>
+
+    <properties>
+        <maven.compiler.source>8</maven.compiler.source>
+        <maven.compiler.target>8</maven.compiler.target>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    </properties>
+
+    <licenses>
+        <license>
+            <name>GNU AFFERO GENERAL PUBLIC LICENSE VERSION 3</name>
+            <url>https://www.gnu.org/licenses/agpl-3.0.html</url>
+        </license>
+    </licenses>
+
+    <dependencies>
+        <dependency>
+<!--            before:-->
+<!--            mvn install:install-file -DgroupId=com.kartuzov -DartifactId=MafiaOnline -Dversion=102 -Dpackaging=jar -Dfile=path\to\MafiaOnline.jar-->
+            <groupId>com.kartuzov</groupId>
+            <artifactId>MafiaOnline</artifactId>
+            <version>102</version>
+        </dependency>
+    </dependencies>
+
+    <build>
+        <finalName>Private Mafia</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.11.0</version>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>3.0.0</version>
+                <executions>
+                    <execution>
+                        <id>decode-apk</id>
+                        <phase>prepare-package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-jar</argument>
+                                <argument>apktool.jar</argument>
+                                <argument>d</argument>
+                                <argument>MafiaOnline.apk</argument>
+                                <argument>-f</argument>
+                                <argument>-o</argument>
+                                <argument>target/Mafia</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>convert-jar-to-dex</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration> <!-- Path to dx.jar in Android SDK -->
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-jar</argument>
+                                <argument>dx.jar</argument>
+                                <argument>--dex</argument>
+                                <argument>--output=target/classes.dex</argument>
+                                <argument>target/${project.build.finalName}.jar</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>convert-dex-to-smali</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-jar</argument>
+                                <argument>baksmali.jar</argument>
+                                <argument>d</argument>
+                                <argument>target/classes.dex</argument>
+                                <argument>-o</argument>
+                                <argument>target/Mafia/smali</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>build-apk</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration>
+                            <executable>java</executable>
+                            <arguments>
+                                <argument>-jar</argument>
+                                <argument>apktool.jar</argument>
+                                <argument>b</argument>
+                                <argument>target/Mafia</argument>
+                                <argument>-f</argument>
+                                <argument>-o</argument>
+                                <argument>target/PrivateMafia.apk</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                    <execution>
+                        <id>sign-apk</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                        <configuration> <!-- Path to d2j -->
+                            <executable>E:\android\apk_to_jar\d2j-apk-sign.bat</executable>
+                            <arguments>
+                                <argument>-o</argument>
+                                <argument>target/PrivateMafia-signed.apk</argument>
+                                <argument>target/PrivateMafia.apk</argument>
+                            </arguments>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>
